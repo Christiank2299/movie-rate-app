@@ -2,7 +2,8 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
-    "packageManager": "npm"
+    "packageManager": "npm",
+    "analytics": "27becb4b-0c12-4cda-8884-1073c593d0ae"
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -17,6 +18,9 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
+            "polyfills": [
+            "zone.js"
+            ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {

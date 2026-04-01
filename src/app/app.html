@@ -7,7 +7,7 @@
 <!-- * * * * * * * to get started with your project! * * * * * * * -->
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 
-<style>
+<!-- <style>
   :host {
     --bright-blue: oklch(51.01% 0.274 263.83);
     --electric-violet: oklch(53.18% 0.28 296.97);
@@ -330,7 +330,7 @@
       </div>
     </div>
   </div>
-</main>
+</main> -->
 
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * * The content above * * * * * * * * * * * * -->
@@ -339,6 +339,75 @@
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * End of Placeholder  * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<div class="min-h-screen bg-slate-950 text-slate-100">
+  <header class="sticky top-0 z-50 border-b border-white/10 bg-slate-950/80 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <a routerLink="/" class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-400/20 text-rose-300">
+          <i class="pi pi-video text-lg"></i>
+        </div>
 
+        <div>
+          <p class="text-lg font-semibold tracking-tight text-white">MovieRate</p>
+          <p class="text-xs text-slate-400">Personal movie dashboard</p>
+        </div>
+      </a>
 
-<router-outlet />
+      <nav class="hidden items-center gap-2 md:flex">
+        <a
+          routerLink="/"
+          [routerLinkActiveOptions]="{ exact: true }"
+          routerLinkActive="bg-white/10 text-white"
+          class="rounded-full px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+        >
+          Home
+        </a>
+
+        <a
+          routerLink="/discover"
+          routerLinkActive="bg-white/10 text-white"
+          class="rounded-full px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+        >
+          Discover
+        </a>
+
+        <a
+          routerLink="/library"
+          routerLinkActive="bg-white/10 text-white"
+          class="rounded-full px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+        >
+          My Library
+        </a>
+
+        <a
+          routerLink="/reviews"
+          routerLinkActive="bg-white/10 text-white"
+          class="rounded-full px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+        >
+          Reviews
+        </a>
+
+        <a
+          routerLink="/profile"
+          routerLinkActive="bg-white/10 text-white"
+          class="rounded-full px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+        >
+          Profile
+        </a>
+
+        <a
+          routerLink="/about"
+          routerLinkActive="bg-white/10 text-white"
+          class="rounded-full px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+        >
+          About
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-6 py-8">
+    <router-outlet></router-outlet>
+  </main>
+</div>
+

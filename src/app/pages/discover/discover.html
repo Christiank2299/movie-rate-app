@@ -1,0 +1,83 @@
+<section class="space-y-8">
+  <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
+    <div class="mb-6">
+      <p class="mb-2 text-sm uppercase tracking-[0.2em] text-emerald-300">Discover</p>
+      <h1 class="text-3xl font-semibold tracking-tight text-white">Search movies</h1>
+      <p class="mt-2 max-w-2xl text-slate-300">
+        Search TMDB and build your own personal movie library.
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-4 md:flex-row">
+      <input
+        pInputText
+        [(ngModel)]="query"
+        type="text"
+        placeholder="Search by title"
+        class="w-full rounded-2xl"
+        (keyup.enter)="searchMovies()"
+      />
+
+      <p-button
+        label="Search"
+        icon="pi pi-search"
+        [loading]="loading"
+        [disabled]="loading"
+        (onClick)="searchMovies()"
+        styleClass="rounded-2xl"
+      ></p-button>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="rounded-3xl border border-red-500/20 bg-red-500/10 p-6 text-red-200">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="loading" class="rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-slate-300">
+    Loading movies...
+  </div>
+
+  <div
+    *ngIf="searched && !loading && !errorMessage && movies.length === 0"
+    class="rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-slate-300"
+  >
+    No movies found. Try another search.
+  </div>
+
+  <div *ngIf="!loading && movies.length > 0" class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+    <article
+      *ngFor="let movie of movies"
+      class="overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/80 shadow-xl transition hover:-translate-y-1"
+    >
+      <div class="aspect-[2/3] bg-slate-800">
+        <img
+          *ngIf="movie.posterUrl; else noPoster"
+          [src]="movie.posterUrl"
+          [alt]="movie.title"
+          class="h-full w-full object-cover"
+        />
+
+        <ng-template #noPoster>
+          <div class="flex h-full items-center justify-center text-slate-500">
+            <i class="pi pi-video text-4xl"></i>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="space-y-3 p-5">
+        <h2 class="line-clamp-2 text-lg font-semibold text-white">
+          {{ movie.title }}
+        </h2>
+
+        <div class="flex items-center justify-between text-sm text-slate-400">
+          <span>{{ movie.releaseDate || 'No date' }}</span>
+          <span>⭐ {{ movie.voteAverage || 0 }}</span>
+        </div>
+
+        <p class="line-clamp-4 text-sm leading-6 text-slate-300">
+          {{ movie.overview || 'No overview available.' }}
+        </p>
+      </div>
+    </article>
+  </div>
+</section>

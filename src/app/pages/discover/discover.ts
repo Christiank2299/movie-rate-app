@@ -1,50 +1,74 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { MovieService } from '../../core/services/movie';
+import { MovieService } from '../../core/services/movie.service';
+import { LibraryService } from '../../core/services/library.service';
 import { Movie } from '../../core/models/movie.model';
 
 @Component({
   selector: 'app-discover',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, InputTextModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './discover.html',
-  styleUrl: './discover.css'
 })
-export class Discover {
+export class Discover implements OnInit {
   private movieService = inject(MovieService);
+  private libraryService = inject(LibraryService);
 
-  query = 'Inception';
-  movies: Movie[] = [];
-  loading = false;
-  searched = false;
-  errorMessage = '';
+  searchQuery = signal('');
+  movies = signal<Movie[]>([]);
+  trending = signal<Movie[]>([]);
+  isLoading = signal(false);
+  hasSearched = signal(false);
 
-  searchMovies(): void {
-    if (this.loading) return;
+  ngOnInit() {
+    this.loadTrending();
+  }
 
-    const trimmedQuery = this.query.trim();
-    if (!trimmedQuery) return;
+  loadTrending() {
+    this.movieService.getTrending().subscribe({
+      next: (results) => this.trending.set(results),
+      error: (err) => console.error('Trending error', err),
+    });
+  }
 
-    this.loading = true;
-    this.searched = true;
-    this.errorMessage = '';
+  onSearch() {
+    const q = this.searchQuery().trim();
+    if (!q) return;
+    this.isLoading.set(true);
+    this.hasSearched.set(true);
+    this.movieService.searchMovies(q).subscribe({
+      next: (results) => {
+        this.movies.set(results);
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false),
+    });
+  }
 
-    this.movieService
-      .searchMovies(trimmedQuery)
-      .pipe(finalize(() => (this.loading = false)))
-      .subscribe({
-        next: (movies) => {
-          this.movies = movies;
-        },
-        error: (error) => {
-          console.error('TMDB request failed:', error);
-          this.movies = [];
-          this.errorMessage = 'Could not load movies.';
-        }
-      });
+  clearSearch() {
+    this.searchQuery.set('');
+    this.movies.set([]);
+    this.hasSearched.set(false);
+  }
+
+  addToLibrary(movie: Movie, status: 'want' | 'watching' | 'finished') {
+    this.libraryService.addMovie(movie, status);
+  }
+
+  isInLibrary(id: number): boolean {
+    return this.libraryService.isInLibrary(id);
+  }
+
+  getStatus(id: number) {
+    return this.libraryService.getEntry(id)?.status;
+  }
+
+  get displayMovies(): Movie[] {
+    return this.hasSearched() ? this.movies() : this.trending();
+  }
+
+  get sectionTitle(): string {
+    return this.hasSearched() ? `Results for "${this.searchQuery()}"` : 'Trending This Week';
   }
 }

@@ -4,7 +4,6 @@ import { Discover } from './pages/discover/discover';
 import { Library } from './pages/library/library';
 import { Reviews } from './pages/reviews/reviews';
 import { Profile } from './pages/profile/profile';
-import { About } from './pages/about/about';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -12,6 +11,5 @@ export const routes: Routes = [
   { path: 'library', component: Library },
   { path: 'reviews', component: Reviews },
   { path: 'profile', component: Profile },
-  { path: 'about', component: About },
   { path: '**', redirectTo: '' }
 ];

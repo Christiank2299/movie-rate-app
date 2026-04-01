@@ -1,4 +1,98 @@
-<section class="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-xl">
-  <h1 class="text-3xl font-semibold text-white">Reviews</h1>
-  <p class="mt-3 text-slate-300">Reviews page is rendering.</p>
-</section>
+<div class="space-y-6">
+
+  <div class="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-xl">
+    <h1 class="text-3xl font-semibold text-white">My Reviews</h1>
+    <p class="mt-1 text-slate-400">Rate and review movies you've finished.</p>
+  </div>
+
+  @if (finished.length === 0) {
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-16 text-center">
+      <i class="pi pi-star text-4xl text-slate-600"></i>
+      <p class="mt-4 text-slate-400">No finished movies yet. Mark some as Finished in your library.</p>
+    </div>
+  }
+
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (entry of finished; track entry.movie.id) {
+      @let review = getReview(entry.movie.id);
+      @let isEditing = editingId() === entry.movie.id;
+
+      <div class="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+
+        <!-- Movie header -->
+        <div class="flex gap-4 p-4">
+          @if (entry.movie.posterUrl) {
+            <img [src]="entry.movie.posterUrl" [alt]="entry.movie.title"
+              class="h-20 w-14 flex-shrink-0 rounded-xl object-cover" />
+          }
+          <div class="min-w-0">
+            <p class="font-semibold text-white line-clamp-2">{{ entry.movie.title }}</p>
+            <p class="text-xs text-slate-500 mt-0.5">{{ entry.movie.releaseDate | slice:0:4 }}</p>
+
+            @if (review && !isEditing) {
+              <!-- Star display -->
+              <div class="mt-2 flex items-center gap-1">
+                @for (s of stars(10); track s) {
+                  <i class="pi pi-star-fill text-xs"
+                    [class.text-yellow-400]="s <= review.rating"
+                    [class.text-slate-600]="s > review.rating"></i>
+                }
+                <span class="ml-1 text-xs text-slate-400">{{ review.rating }}/10</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Review body -->
+        <div class="flex-1 border-t border-white/5 p-4">
+          @if (isEditing) {
+            <!-- Edit mode -->
+            <div class="space-y-3">
+              <div>
+                <label class="mb-1 block text-xs text-slate-400">Rating: {{ draftRating() }}/10</label>
+                <input type="range" min="1" max="10"
+                  [ngModel]="draftRating()"
+                  (ngModelChange)="draftRating.set($event)"
+                  class="w-full accent-rose-500" />
+              </div>
+              <textarea
+                rows="3"
+                placeholder="Write your review…"
+                [ngModel]="draftText()"
+                (ngModelChange)="draftText.set($event)"
+                class="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-rose-400/50">
+              </textarea>
+              <div class="flex gap-2">
+                <button (click)="saveReview(entry.movie.id)"
+                  class="flex-1 rounded-xl bg-rose-500 py-2 text-sm font-semibold text-white hover:bg-rose-400">
+                  Save
+                </button>
+                <button (click)="cancelEdit()"
+                  class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 hover:bg-white/10">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          } @else if (review) {
+            <!-- Existing review -->
+            <p class="text-sm text-slate-300 leading-relaxed">{{ review.reviewText || 'No review written.' }}</p>
+            <p class="mt-2 text-xs text-slate-600">{{ review.createdAt | date:'mediumDate' }}</p>
+            <button (click)="startEdit(entry.movie.id)"
+              class="mt-3 text-xs text-rose-400 hover:text-rose-300">
+              Edit review →
+            </button>
+          } @else {
+            <!-- No review yet -->
+            <p class="text-sm text-slate-500">No review yet.</p>
+            <button (click)="startEdit(entry.movie.id)"
+              class="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm font-medium text-rose-300 hover:bg-rose-500/20">
+              + Write a Review
+            </button>
+          }
+        </div>
+
+      </div>
+    }
+  </div>
+
+</div>

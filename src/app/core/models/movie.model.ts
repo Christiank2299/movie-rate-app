@@ -10,4 +10,5 @@ export interface Movie {
   voteCount: number;
   popularity: number;
   language: string;
+  genreIds?: number[];
 }

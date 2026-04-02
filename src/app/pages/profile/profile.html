@@ -1,4 +1,81 @@
-<section class="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-xl">
-  <h1 class="text-3xl font-semibold text-white">Profile</h1>
-  <p class="mt-3 text-slate-300">Profile page is rendering.</p>
-</section>
+<div class="mx-auto max-w-2xl space-y-6">
+
+  <!-- Header -->
+  <div class="rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-900 to-rose-950/20 p-8 shadow-2xl">
+    @if (isNewUser()) {
+      <div class="mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-400/20 text-rose-300">
+        <i class="pi pi-video text-2xl"></i>
+      </div>
+      <h1 class="text-3xl font-semibold text-white">Welcome to MovieRate</h1>
+      <p class="mt-2 text-slate-400">Set up your profile to get personalized recommendations.</p>
+    } @else {
+      <div class="flex items-center gap-4">
+        <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500 text-2xl font-bold text-white">
+          {{ displayName().charAt(0).toUpperCase() }}
+        </div>
+        <div>
+          <h1 class="text-3xl font-semibold text-white">{{ displayName() }}</h1>
+          <p class="text-sm text-slate-400">Manage your profile and preferences</p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Save success toast -->
+  @if (saveSuccess()) {
+    <div class="rounded-2xl border border-green-500/30 bg-green-500/10 px-5 py-3 text-sm font-medium text-green-400">
+      ✓ Profile saved successfully!
+    </div>
+  }
+
+  <!-- Name Section -->
+  <div class="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+    <h2 class="text-lg font-semibold text-white">Display Name</h2>
+    <input
+      type="text"
+      [ngModel]="displayName()"
+      (ngModelChange)="displayName.set($event)"
+      placeholder="What should we call you?"
+      class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:border-rose-400/50 focus:outline-none focus:ring-1 focus:ring-rose-400/50"
+    />
+  </div>
+
+  <!-- Genre Preferences -->
+  <div class="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+    <div>
+      <h2 class="text-lg font-semibold text-white">Favorite Genres</h2>
+      <p class="mt-1 text-sm text-slate-400">Used to personalize your recommendations.</p>
+    </div>
+
+    <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+      @for (genre of genres; track genre.id) {
+        <button
+          (click)="toggleGenre(genre.id)"
+          [class.border-rose-500]="isSelected(genre.id)"
+          [class.bg-rose-500\/20]="isSelected(genre.id)"
+          [class.text-white]="isSelected(genre.id)"
+          [class.border-white\/10]="!isSelected(genre.id)"
+          [class.bg-white\/5]="!isSelected(genre.id)"
+          [class.text-slate-400]="!isSelected(genre.id)"
+          class="flex flex-col items-center gap-1.5 rounded-2xl border px-3 py-4 text-center transition hover:border-rose-400/50 hover:text-white">
+          <span class="text-2xl">{{ genre.emoji }}</span>
+          <span class="text-xs font-medium leading-tight">{{ genre.name }}</span>
+        </button>
+      }
+    </div>
+
+    <p class="text-xs text-slate-600">
+      {{ selectedGenres().length }} genre{{ selectedGenres().length !== 1 ? 's' : '' }} selected
+    </p>
+  </div>
+
+  <!-- Save Button -->
+  <div class="pb-8">
+    <button (click)="save()"
+      [disabled]="!displayName().trim()"
+      class="w-full rounded-xl bg-rose-500 py-3 text-sm font-semibold text-white transition hover:bg-rose-400 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+      {{ isNewUser() ? 'Create Profile →' : 'Save Changes' }}
+    </button>
+  </div>
+
+</div>

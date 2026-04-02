@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MovieService } from '../../core/services/movie.service';
 import { LibraryService } from '../../core/services/library.service';
+import { ProfileService } from '../../core/services/profile.service';
 import { Movie } from '../../core/models/movie.model';
 
 @Component({
@@ -13,12 +14,14 @@ import { Movie } from '../../core/models/movie.model';
 })
 export class Home implements OnInit {
   private movieService = inject(MovieService);
+  private profileService = inject(ProfileService);
   libraryService = inject(LibraryService);
 
   popular = signal<Movie[]>([]);
   topRated = signal<Movie[]>([]);
   recommended = signal<Movie[]>([]);
   hasRecommendations = signal(false);
+  recommendationSource = signal<'library' | 'profile' | null>(null);
 
   ngOnInit() {
     this.movieService.getPopular().subscribe(r => this.popular.set(r.slice(0, 6)));
@@ -28,39 +31,43 @@ export class Home implements OnInit {
 
   loadRecommendations() {
     const entries = this.libraryService.entries();
-    if (entries.length === 0) return;
+    const libraryIds = new Set(entries.map(e => e.movie.id));
+    let topGenres: number[] = [];
 
-    // Tally genre counts across all library movies
-    const genreCounts: Record<number, number> = {};
-    for (const entry of entries) {
-      for (const gId of entry.movie.genreIds ?? []) {
-        genreCounts[gId] = (genreCounts[gId] ?? 0) + 1;
+    if (entries.length > 0) {
+      // Use library genre frequency
+      const genreCounts: Record<number, number> = {};
+      for (const entry of entries) {
+        for (const gId of entry.movie.genreIds ?? []) {
+          genreCounts[gId] = (genreCounts[gId] ?? 0) + 1;
+        }
       }
+      topGenres = Object.entries(genreCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([id]) => Number(id));
+      this.recommendationSource.set('library');
+    } else {
+      // Fall back to profile genres
+      const profile = this.profileService.profile();
+      topGenres = profile?.favoriteGenres?.slice(0, 3) ?? [];
+      if (topGenres.length > 0) this.recommendationSource.set('profile');
     }
 
-    // Pick top 3 genres by frequency
-    const topGenres = Object.entries(genreCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([id]) => Number(id));
-
     if (topGenres.length === 0) return;
-
-    const libraryIds = new Set(entries.map(e => e.movie.id));
 
     this.movieService.discoverMovies({
       genres: topGenres,
       sortBy: 'popularity.desc',
       page: 1,
     }).subscribe(({ movies }) => {
-      const filtered = movies
-        .filter(m => !libraryIds.has(m.id))
-        .slice(0, 6);
+      const filtered = movies.filter(m => !libraryIds.has(m.id)).slice(0, 6);
       this.recommended.set(filtered);
       this.hasRecommendations.set(filtered.length > 0);
     });
   }
 
+  get profile() { return this.profileService.profile(); }
   get wantCount() { return this.libraryService.getByStatus('want').length; }
   get watchingCount() { return this.libraryService.getByStatus('watching').length; }
   get finishedCount() { return this.libraryService.getByStatus('finished').length; }

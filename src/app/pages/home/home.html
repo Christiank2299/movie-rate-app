@@ -41,13 +41,14 @@
     </div>
   </div>
 
-  <!-- Recommended For You -->
 @if (hasRecommendations()) {
   <section>
     <div class="mb-4 flex items-center justify-between">
       <div>
         <h2 class="text-xl font-semibold text-white">Recommended For You</h2>
-        <p class="text-xs text-slate-500 mt-0.5">Based on genres in your library</p>
+        <p class="text-xs text-slate-500 mt-0.5">
+          {{ recommendationSource() === 'library' ? 'Based on genres in your library' : 'Based on your favorite genres' }}
+        </p>
       </div>
       <a routerLink="/discover" class="text-sm text-rose-400 hover:text-rose-300">Explore more →</a>
     </div>

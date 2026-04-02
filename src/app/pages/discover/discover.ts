@@ -78,26 +78,37 @@ export class Discover implements OnInit {
   }
 
   onSearch(page = 1) {
-    const q = this.searchQuery().trim();
-    const hasQuery = q.length > 0;
-    const hasFilters = this.selectedGenres().length > 0 || !!this.selectedYear() || this.minRating() > 0;
+  const q = this.searchQuery().trim();
+  const hasQuery = q.length > 0;
 
-    if (!hasQuery && !hasFilters) return;
+  // sortBy !== default also counts as a filter
+  const hasFilters =
+    this.selectedGenres().length > 0 ||
+    !!this.selectedYear() ||
+    this.minRating() > 0 ||
+    this.sortBy() !== 'popularity.desc';
 
-    this.isLoading.set(true);
-    this.hasSearched.set(true);
-    this.currentPage.set(page);
+  if (!hasQuery && !hasFilters) return;
 
-    if (hasQuery && this.searchType() === 'person') {
-      this.movieService.searchByPerson(q, page).subscribe({
-        next: ({ movies, totalPages }) => {
-          this.movies.set(movies);
-          this.totalPages.set(totalPages);
-          this.isLoading.set(false);
-        },
-        error: () => this.isLoading.set(false),
-      });
-    } else if (hasQuery && !hasFilters) {
+  this.isLoading.set(true);
+  this.hasSearched.set(true);
+  this.currentPage.set(page);
+
+  if (hasQuery && this.searchType() === 'person') {
+    this.movieService.searchByPerson(q, page).subscribe({
+      next: ({ movies, totalPages }) => {
+        this.movies.set(movies);
+        this.totalPages.set(totalPages);
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false),
+    });
+  } else {
+    // Always use discoverMovies when any filter or sort is active,
+    // or when there's no query (pure filter/sort browse)
+    const useDiscover = hasFilters || !hasQuery;
+
+    if (!useDiscover) {
       this.movieService.searchMovies(q, page).subscribe({
         next: ({ movies, totalPages }) => {
           this.movies.set(movies);
@@ -124,17 +135,18 @@ export class Discover implements OnInit {
       });
     }
   }
+}
 
   clearSearch() {
-    this.searchQuery.set('');
-    this.selectedGenres.set([]);
-    this.selectedYear.set('');
-    this.minRating.set(0);
-    this.sortBy.set('popularity.desc');
-    this.movies.set([]);
-    this.hasSearched.set(false);
-    this.currentPage.set(1);
-  }
+  this.searchQuery.set('');
+  this.selectedGenres.set([]);
+  this.selectedYear.set('');
+  this.minRating.set(0);
+  this.sortBy.set('popularity.desc');  // make sure this line stays
+  this.movies.set([]);
+  this.hasSearched.set(false);
+  this.currentPage.set(1);
+}
 
   toggleGenre(id: number) {
     const current = this.selectedGenres();
@@ -182,7 +194,8 @@ export class Discover implements OnInit {
   get activeFilterCount(): number {
     return this.selectedGenres().length +
       (this.selectedYear() ? 1 : 0) +
-      (this.minRating() > 0 ? 1 : 0);
+      (this.minRating() > 0 ? 1 : 0) +
+      (this.sortBy() !== 'popularity.desc' ? 1 : 0);
   }
 
   private buildYears(): string[] {

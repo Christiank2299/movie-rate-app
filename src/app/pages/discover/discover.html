@@ -1,148 +1,278 @@
 <div class="space-y-6">
 
-  <!-- Search Bar -->
+  <!-- Search Panel -->
   <div class="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-xl">
     <h1 class="text-3xl font-semibold text-white">Discover Movies</h1>
-    <p class="mt-1 text-slate-400">Search by title, actor, or director — or filter by genre, year, and more.</p>
+    <p class="mt-1 text-slate-400">Search titles, people, or find films by collaborators.</p>
 
-    <!-- Search type toggle -->
-    <div class="mt-5 flex gap-2">
-      <button
-        (click)="searchType.set('title')"
-        [class.bg-white]="searchType() === 'title'"
-        [class.text-slate-900]="searchType() === 'title'"
-        [class.bg-white\/10]="searchType() !== 'title'"
-        [class.text-slate-300]="searchType() !== 'title'"
-        class="rounded-full px-4 py-1.5 text-sm font-medium transition">
-        🎬 By Title
-      </button>
-      <button
-        (click)="searchType.set('person')"
-        [class.bg-white]="searchType() === 'person'"
-        [class.text-slate-900]="searchType() === 'person'"
-        [class.bg-white\/10]="searchType() !== 'person'"
-        [class.text-slate-300]="searchType() !== 'person'"
-        class="rounded-full px-4 py-1.5 text-sm font-medium transition">
-        🎭 By Actor / Director
-      </button>
-    </div>
-
-    <!-- Search input -->
-    <div class="mt-4 flex gap-3">
-      <input
-        type="text"
-        [ngModel]="searchQuery()"
-        (ngModelChange)="searchQuery.set($event)"
-        (keyup.enter)="onSearch()"
-        [placeholder]="searchType() === 'person' ? 'e.g. Christopher Nolan, Tom Hanks…' : 'e.g. Inception, The Godfather…'"
-        class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:border-rose-400/50 focus:outline-none focus:ring-1 focus:ring-rose-400/50"
-      />
-      <button (click)="onSearch()"
-        class="rounded-xl bg-rose-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-400 active:scale-95">
-        Search
-      </button>
-      @if (hasSearched()) {
-        <button (click)="clearSearch()"
-          class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300 transition hover:bg-white/10">
-          Clear
+    <!-- Tabs -->
+    <div class="mt-5 flex gap-0 border-b border-white/10">
+      @for (tab of [
+        { value: 'title', label: '🎬 Titles' },
+        { value: 'person', label: '🎭 People' },
+        { value: 'collaborators', label: '🤝 Collaborations' }
+      ]; track tab.value) {
+        <button
+          (click)="activeTab.set($any(tab.value))"
+          [class.border-b-2]="activeTab() === tab.value"
+          [class.border-rose-500]="activeTab() === tab.value"
+          [class.text-white]="activeTab() === tab.value"
+          [class.text-slate-400]="activeTab() !== tab.value"
+          class="px-5 pb-3 text-sm font-medium transition hover:text-white">
+          {{ tab.label }}
         </button>
       }
     </div>
 
-    <!-- Filter toggle -->
-    <button
-      (click)="showFilters.set(!showFilters())"
-      class="mt-4 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10">
-      <i class="pi pi-sliders-h"></i>
-      Filters
-      @if (activeFilterCount > 0) {
-        <span class="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">
-          {{ activeFilterCount }}
-        </span>
+    <div class="mt-5 space-y-4">
+
+      <!-- TITLE TAB -->
+      @if (activeTab() === 'title') {
+        <div class="flex gap-3">
+          <input type="text"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            (keyup.enter)="onSearch()"
+            placeholder="e.g. Inception, The Godfather…"
+            class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:border-rose-400/50 focus:outline-none focus:ring-1 focus:ring-rose-400/50" />
+          <button (click)="onSearch()"
+            class="rounded-xl bg-rose-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-400 active:scale-95">
+            Search
+          </button>
+        </div>
+
+        <!-- Filter Toggle -->
+        <button (click)="showFilters.set(!showFilters())"
+          class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10">
+          <i class="pi pi-sliders-h"></i>
+          Filters
+          @if (activeFilterCount > 0) {
+            <span class="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">{{ activeFilterCount }}</span>
+          }
+          <i class="pi" [class.pi-chevron-down]="!showFilters()" [class.pi-chevron-up]="showFilters()"></i>
+        </button>
+
+        <!-- Filter Panel -->
+        @if (showFilters()) {
+          <div class="space-y-6 rounded-2xl border border-white/10 bg-slate-900/60 p-6">
+
+            <!-- GENRES -->
+            <div>
+              <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Genre</p>
+              <div class="flex flex-wrap gap-2">
+                @for (genre of genres; track genre.id) {
+                  <button (click)="toggleGenre(genre.id)"
+                    [class.bg-rose-500]="isGenreSelected(genre.id)"
+                    [class.text-white]="isGenreSelected(genre.id)"
+                    [class.border-rose-500]="isGenreSelected(genre.id)"
+                    [class.bg-white\/5]="!isGenreSelected(genre.id)"
+                    [class.text-slate-300]="!isGenreSelected(genre.id)"
+                    [class.border-white\/10]="!isGenreSelected(genre.id)"
+                    class="rounded-full border px-3 py-1.5 text-xs font-medium transition hover:border-rose-400/50 hover:text-white">
+                    {{ genre.name }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="border-t border-white/5"></div>
+
+
+            <!-- COLOR + IN THEATERS -->
+            <div>
+              <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Style & Availability</p>
+              <div class="flex flex-wrap gap-2">
+                @for (opt of [
+                  { value: '', label: '🎨 Any Color' },
+                  { value: 'color', label: '🌈 Color' },
+                  { value: 'black_and_white', label: '⬛ Black & White' }
+                ]; track opt.value) {
+                  <button (click)="colorType.set($any(opt.value))"
+                    [class.bg-rose-500\/20]="colorType() === opt.value && opt.value !== ''"
+                    [class.text-rose-300]="colorType() === opt.value && opt.value !== ''"
+                    [class.border-rose-500\/50]="colorType() === opt.value && opt.value !== ''"
+                    [class.bg-white\/5]="colorType() !== opt.value || opt.value === ''"
+                    [class.text-slate-300]="colorType() !== opt.value || opt.value === ''"
+                    [class.border-white\/10]="colorType() !== opt.value || opt.value === ''"
+                    class="rounded-full border px-3 py-1.5 text-xs font-medium transition hover:border-white/30 hover:text-white">
+                    {{ opt.label }}
+                  </button>
+                }
+
+                <button (click)="inTheaters.set(!inTheaters())"
+                  [class.bg-blue-500\/20]="inTheaters()"
+                  [class.text-blue-300]="inTheaters()"
+                  [class.border-blue-500\/50]="inTheaters()"
+                  [class.bg-white\/5]="!inTheaters()"
+                  [class.text-slate-300]="!inTheaters()"
+                  [class.border-white\/10]="!inTheaters()"
+                  class="rounded-full border px-3 py-1.5 text-xs font-medium transition hover:border-blue-400/50 hover:text-blue-200">
+                  🎟️ In Theaters Now
+                </button>
+              </div>
+            </div>
+
+            <div class="border-t border-white/5"></div>
+
+            <!-- YEAR / LANGUAGE / SORT -->
+            <div class="grid gap-4 sm:grid-cols-3">
+              <div>
+                <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Year</p>
+                <select [ngModel]="selectedYear()" (ngModelChange)="selectedYear.set($event)"
+                  class="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-400/50">
+                  <option value="">Any Year</option>
+                  @for (year of years; track year) {
+                    <option [value]="year">{{ year }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Language</p>
+                <select [ngModel]="selectedLanguage()" (ngModelChange)="selectedLanguage.set($event)"
+                  class="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-400/50">
+                  <option value="">Any Language</option>
+                  @for (lang of languages; track lang.code) {
+                    <option [value]="lang.code">{{ lang.name }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Sort By</p>
+                <select [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)"
+                  class="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-400/50">
+                  @for (opt of sortOptions; track opt.value) {
+                    <option [value]="opt.value">{{ opt.label }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <!-- SLIDERS -->
+            <div class="grid gap-6 sm:grid-cols-3">
+              <div>
+                <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                  Min Rating <span class="normal-case font-normal text-slate-500 ml-1">{{ minRating() > 0 ? minRating() + '/10' : '— Any' }}</span>
+                </p>
+                <input type="range" min="0" max="9" step="1"
+                  [ngModel]="minRating()" (ngModelChange)="minRating.set(+$event)"
+                  class="w-full accent-rose-500" />
+                <div class="mt-1 flex justify-between text-xs text-slate-600">
+                  <span>0</span><span>9</span>
+                </div>
+              </div>
+              <div>
+                <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                  Min Runtime <span class="normal-case font-normal text-slate-500 ml-1">{{ minRuntime() > 0 ? minRuntime() + ' min' : '— Any' }}</span>
+                </p>
+                <input type="range" min="0" max="240" step="15"
+                  [ngModel]="minRuntime()" (ngModelChange)="minRuntime.set(+$event)"
+                  class="w-full accent-rose-500" />
+                <div class="mt-1 flex justify-between text-xs text-slate-600">
+                  <span>0</span><span>240m</span>
+                </div>
+              </div>
+              <div>
+                <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                  Max Runtime <span class="normal-case font-normal text-slate-500 ml-1">{{ maxRuntime() > 0 ? maxRuntime() + ' min' : '— Any' }}</span>
+                </p>
+                <input type="range" min="0" max="240" step="15"
+                  [ngModel]="maxRuntime()" (ngModelChange)="maxRuntime.set(+$event)"
+                  class="w-full accent-rose-500" />
+                <div class="mt-1 flex justify-between text-xs text-slate-600">
+                  <span>0</span><span>240m</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="flex items-center justify-center gap-3 border-t border-white/5 pt-5">
+              <button (click)="clearSearch()"
+                class="rounded-xl border border-white/10 bg-white/5 px-6 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-white/10">
+                Clear All
+              </button>
+              <button (click)="onSearch()"
+                class="rounded-xl bg-rose-500 px-8 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-400 active:scale-95">
+                Apply Filters
+              </button>
+            </div>
+
+          </div>
+        }
       }
-      <i class="pi" [class.pi-chevron-down]="!showFilters()" [class.pi-chevron-up]="showFilters()"></i>
-    </button>
 
-    <!-- Filter Panel -->
-    @if (showFilters()) {
-      <div class="mt-4 space-y-5 rounded-2xl border border-white/10 bg-white/5 p-5">
-
-        <!-- Genres -->
-        <div>
-          <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Genre</p>
-          <div class="flex flex-wrap gap-2">
-            @for (genre of genres; track genre.id) {
-              <button
-                (click)="toggleGenre(genre.id)"
-                [class.bg-rose-500]="isGenreSelected(genre.id)"
-                [class.text-white]="isGenreSelected(genre.id)"
-                [class.border-rose-500]="isGenreSelected(genre.id)"
-                [class.bg-white\/5]="!isGenreSelected(genre.id)"
-                [class.text-slate-300]="!isGenreSelected(genre.id)"
-                [class.border-white\/10]="!isGenreSelected(genre.id)"
-                class="rounded-full border px-3 py-1 text-xs font-medium transition hover:border-rose-400/50 hover:text-rose-300">
-                {{ genre.name }}
+      <!-- PERSON TAB -->
+      @if (activeTab() === 'person') {
+        <div class="space-y-3">
+          <p class="text-sm text-slate-400">Find all movies featuring a specific actor or director.</p>
+          <div class="flex gap-3">
+            <input type="text"
+              [ngModel]="personQuery()"
+              (ngModelChange)="personQuery.set($event)"
+              (keyup.enter)="onSearch()"
+              placeholder="e.g. Christopher Nolan, Meryl Streep…"
+              class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:border-rose-400/50 focus:outline-none focus:ring-1 focus:ring-rose-400/50" />
+            <button (click)="onSearch()"
+              class="rounded-xl bg-rose-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-400">
+              Search
+            </button>
+            @if (hasSearched()) {
+              <button (click)="clearSearch()"
+                class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300 transition hover:bg-white/10">
+                Clear
               </button>
             }
           </div>
         </div>
+      }
 
-        <div class="grid gap-4 sm:grid-cols-3">
-          <!-- Year -->
-          <div>
-            <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Year</p>
-            <select
-              [ngModel]="selectedYear()"
-              (ngModelChange)="selectedYear.set($event)"
-              class="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-400/50">
-              <option value="">Any Year</option>
-              @for (year of years; track year) {
-                <option [value]="year">{{ year }}</option>
+      <!-- COLLABORATORS TAB -->
+      @if (activeTab() === 'collaborators') {
+        <div class="space-y-3">
+          <p class="text-sm text-slate-400">Find movies where multiple people appeared together.</p>
+          @for (input of collaboratorInputs(); track $index) {
+            <div class="flex gap-2">
+              <input type="text"
+                [value]="input"
+                (input)="updateCollaborator($index, $any($event.target).value)"
+                [placeholder]="'Person ' + ($index + 1) + ' — e.g. Tom Hanks'"
+                class="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:border-rose-400/50 focus:outline-none focus:ring-1 focus:ring-rose-400/50" />
+              @if (collaboratorInputs().length > 2) {
+                <button (click)="removeCollaborator($index)"
+                  class="rounded-xl border border-white/10 bg-white/5 px-3 text-slate-400 transition hover:text-red-400">
+                  <i class="pi pi-times"></i>
+                </button>
               }
-            </select>
-          </div>
-
-          <!-- Min Rating -->
-          <div>
-            <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
-              Min Rating: {{ minRating() > 0 ? minRating() + '/10' : 'Any' }}
-            </p>
-            <input type="range" min="0" max="9" step="1"
-              [ngModel]="minRating()"
-              (ngModelChange)="minRating.set(+$event)"
-              class="w-full accent-rose-500" />
-          </div>
-
-          <!-- Sort By -->
-          <div>
-            <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Sort By</p>
-            <select
-              [ngModel]="sortBy()"
-              (ngModelChange)="sortBy.set($event)"
-              class="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-400/50">
-              @for (opt of sortOptions; track opt.value) {
-                <option [value]="opt.value">{{ opt.label }}</option>
-              }
-            </select>
+            </div>
+          }
+          <div class="flex gap-3">
+            @if (collaboratorInputs().length < 5) {
+              <button (click)="addCollaborator()"
+                class="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-slate-300 transition hover:bg-white/10">
+                + Add Person
+              </button>
+            }
+            <button (click)="onSearch()"
+              class="rounded-xl bg-rose-500 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-400">
+              Find Movies
+            </button>
+            @if (hasSearched()) {
+              <button (click)="clearSearch()"
+                class="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-slate-300 transition hover:bg-white/10">
+                Clear
+              </button>
+            }
           </div>
         </div>
+      }
 
-        <button (click)="onSearch()"
-          class="rounded-xl bg-rose-500 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-400">
-          Apply Filters
-        </button>
-
-      </div>
-    }
+    </div>
   </div>
 
-  <!-- Section header -->
+  <!-- Section Header -->
   <div class="flex items-center justify-between">
     <h2 class="text-xl font-semibold text-white">{{ sectionTitle }}</h2>
     <div class="flex items-center gap-3">
-      @if (isLoading()) {
-        <span class="text-sm text-slate-400">Loading…</span>
-      }
+      @if (isLoading()) { <span class="text-sm text-slate-400">Loading…</span> }
       @if (hasSearched() && totalPages() > 1) {
         <span class="text-sm text-slate-500">Page {{ currentPage() }} of {{ totalPages() }}</span>
       }
@@ -160,7 +290,6 @@
   <div class="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
     @for (movie of displayMovies; track movie.id) {
       <div class="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition hover:border-white/20 hover:bg-white/10">
-
         <div class="relative aspect-[2/3] w-full overflow-hidden bg-slate-800">
           @if (movie.posterUrl) {
             <img [src]="movie.posterUrl" [alt]="movie.title"
@@ -170,25 +299,21 @@
               <i class="pi pi-image text-4xl"></i>
             </div>
           }
-
           <div class="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-xs font-semibold text-yellow-400">
             <i class="pi pi-star-fill text-[10px]"></i>
             {{ movie.voteAverage | number:'1.1-1' }}
           </div>
-
           @if (isInLibrary(movie.id)) {
             <div class="absolute right-2 top-2 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-semibold text-white">
               {{ getStatus(movie.id) | titlecase }}
             </div>
           }
         </div>
-
         <div class="flex flex-1 flex-col gap-3 p-3">
           <div>
             <p class="text-sm font-semibold leading-tight text-white line-clamp-2">{{ movie.title }}</p>
             <p class="mt-1 text-xs text-slate-500">{{ movie.releaseDate | slice:0:4 }}</p>
           </div>
-
           @if (!isInLibrary(movie.id)) {
             <div class="mt-auto flex flex-col gap-1.5">
               <button (click)="addToLibrary(movie, 'want')"
@@ -208,7 +333,6 @@
             <div class="mt-auto text-center text-xs text-slate-500 py-1">✓ In your library</div>
           }
         </div>
-
       </div>
     }
   </div>

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, switchMap, of } from 'rxjs';
+import { Observable, map, switchMap, forkJoin, of } from 'rxjs';
 import { Movie } from '../models/movie.model';
 
 export interface DiscoverParams {
@@ -10,7 +10,14 @@ export interface DiscoverParams {
   minRating?: number;
   sortBy?: string;
   page?: number;
+  language?: string;
+  minRuntime?: number;
+  maxRuntime?: number;
+  colorType?: 'color' | 'black_and_white' | '';
+  inTheaters?: boolean;
 }
+
+
 
 export interface MoviePage {
   movies: Movie[];
@@ -64,6 +71,17 @@ export class MovieService {
     if (params.genres?.length) url += `&with_genres=${params.genres.join(',')}`;
     if (params.year) url += `&primary_release_year=${params.year}`;
     if (params.minRating && params.minRating > 0) url += `&vote_average.gte=${params.minRating}&vote_count.gte=50`;
+    if (params.language) url += `&with_original_language=${params.language}`;
+    if (params.minRuntime) url += `&with_runtime.gte=${params.minRuntime}`;
+    if (params.maxRuntime) url += `&with_runtime.lte=${params.maxRuntime}`;
+    if (params.colorType === 'black_and_white') url += `&with_keywords=12999`;
+    if (params.colorType === 'color') url += `&without_keywords=12999`;
+    if (params.inTheaters) {
+      const today = new Date().toISOString().split('T')[0];
+      const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      url += `&with_release_type=3|2&release_date.gte=${twoWeeksAgo}&release_date.lte=${today}&region=US`;
+    }
+
 
     return this.http.get<any>(url).pipe(map(res => this.mapPage(res)));
   }
@@ -83,6 +101,39 @@ export class MovieService {
     );
   }
 
+
+
+searchByCollaborators(names: string[], page = 1): Observable<MoviePage> {
+  if (names.length === 0) return of({ movies: [], totalPages: 1 });
+
+  // Look up each person one at a time, then combine
+  const personLookups$ = names.map(name => {
+    const url = `${this.baseUrl}/search/person?query=${encodeURIComponent(name)}&include_adult=false&language=en-US&api_key=${this.apiKey}`;
+    return this.http.get<any>(url).pipe(
+      map(res => {
+        const person = res?.results?.[0];
+        return person ? { id: person.id, name: person.name } : null;
+      })
+    );
+  });
+
+  return forkJoin(personLookups$).pipe(
+    switchMap(people => {
+      const found = people.filter(p => p !== null) as { id: number; name: string }[];
+
+      if (found.length === 0) return of({ movies: [], totalPages: 1 });
+
+      // TMDB uses | for OR and , for AND between person IDs
+      const castIds = found.map(p => p.id).join(',');
+
+      const url = `${this.baseUrl}/discover/movie?with_cast=${castIds}&sort_by=popularity.desc&page=${page}&language=en-US&api_key=${this.apiKey}`;
+
+      return this.http.get<any>(url).pipe(
+        map(res => this.mapPage(res))
+      );
+    })
+  );
+}
   getTrending(): Observable<Movie[]> {
     const url = `${this.baseUrl}/trending/movie/week?api_key=${this.apiKey}`;
     return this.http.get<any>(url).pipe(

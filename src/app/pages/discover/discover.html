@@ -255,6 +255,9 @@
       @if (hasSearched() && totalPages() > 1) {
         <span class="text-sm text-slate-500">Page {{ currentPage() }} of {{ totalPages() }}</span>
       }
+      @if (!hasSearched() && trendingTotalPages() > 1) {
+        <span class="text-sm text-slate-500">Page {{ trendingPage() }} of {{ trendingTotalPages() }}</span>
+      }
     </div>
   </div>
 
@@ -315,6 +318,7 @@
     }
   </div>
 
+  <!-- Search results pagination -->
   @if (hasSearched() && totalPages() > 1) {
     <div class="flex items-center justify-center gap-4 pt-4">
       <button (click)="prevPage()" [disabled]="currentPage() === 1"
@@ -323,6 +327,21 @@
       </button>
       <span class="text-sm text-slate-400">{{ currentPage() }} / {{ totalPages() }}</span>
       <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+        class="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-slate-300 transition hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">
+        Next →
+      </button>
+    </div>
+  }
+
+  <!-- Trending pagination -->
+  @if (!hasSearched() && trendingTotalPages() > 1) {
+    <div class="flex items-center justify-center gap-4 pt-4">
+      <button (click)="prevTrendingPage()" [disabled]="trendingPage() === 1"
+        class="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-slate-300 transition hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">
+        ← Previous
+      </button>
+      <span class="text-sm text-slate-400">{{ trendingPage() }} / {{ trendingTotalPages() }}</span>
+      <button (click)="nextTrendingPage()" [disabled]="trendingPage() === trendingTotalPages()"
         class="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-slate-300 transition hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed">
         Next →
       </button>

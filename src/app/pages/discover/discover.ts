@@ -70,6 +70,8 @@ export class Discover implements OnInit {
   currentPage = signal(1);
   totalPages = signal(1);
   currentMode = signal<string | null>(null);
+  trendingPage = signal(1);
+  trendingTotalPages = signal(1);
 
   selectedMovieId = signal<number | null>(null);
   openDetail(id: number) { this.selectedMovieId.set(id); }
@@ -169,10 +171,25 @@ export class Discover implements OnInit {
     }
   }
 
-  loadTrending() {
-    this.movieService.getTrending().subscribe({
-      next: (results) => this.trending.set(results),
-    });
+  loadTrending(page = 1) {
+    this.isLoading.set(true);
+    this.trendingPage.set(page);
+    this.movieService.discoverMovies({ sortBy: 'popularity.desc', page })
+      .subscribe(({ movies, totalPages }) => {
+        this.trending.set(movies);
+        this.trendingTotalPages.set(Math.min(totalPages, 5));
+        this.isLoading.set(false);
+      });
+  }
+
+  nextTrendingPage() {
+    if (this.trendingPage() < this.trendingTotalPages())
+      this.loadTrending(this.trendingPage() + 1);
+  }
+
+  prevTrendingPage() {
+    if (this.trendingPage() > 1)
+      this.loadTrending(this.trendingPage() - 1);
   }
 
   onSearch(page = 1) {

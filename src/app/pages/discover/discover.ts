@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { MovieService } from '../../core/services/movie.service';
 import { LibraryService } from '../../core/services/library.service';
 import { Movie } from '../../core/models/movie.model';
@@ -35,7 +36,6 @@ export const LANGUAGES = [
   { code: 'ru', name: 'Russian' }, { code: 'ar', name: 'Arabic' },
 ];
 
-
 @Component({
   selector: 'app-discover',
   standalone: true,
@@ -45,13 +45,13 @@ export const LANGUAGES = [
 export class Discover implements OnInit {
   private movieService = inject(MovieService);
   private libraryService = inject(LibraryService);
+  private route = inject(ActivatedRoute);
 
   activeTab = signal<'title' | 'person' | 'collaborators'>('title');
   searchQuery = signal('');
   personQuery = signal('');
   collaboratorInputs = signal<string[]>(['', '']);
 
-  // Filters
   selectedGenres = signal<number[]>([]);
   selectedYear = signal('');
   minRating = signal(0);
@@ -69,6 +69,7 @@ export class Discover implements OnInit {
   hasSearched = signal(false);
   currentPage = signal(1);
   totalPages = signal(1);
+  currentMode = signal<string | null>(null);
 
   selectedMovieId = signal<number | null>(null);
   openDetail(id: number) { this.selectedMovieId.set(id); }
@@ -78,10 +79,94 @@ export class Discover implements OnInit {
   readonly sortOptions = SORT_OPTIONS;
   readonly languages = LANGUAGES;
   readonly years = this.buildYears();
-  
 
   ngOnInit() {
     this.loadTrending();
+    this.route.queryParams.subscribe(params => {
+      const mode = params['mode'];
+      this.currentMode.set(mode ?? null);
+
+      if (mode === 'popular') {
+        this.isLoading.set(true);
+        this.hasSearched.set(true);
+        this.currentPage.set(1);
+        this.movieService.discoverMovies({ sortBy: 'popularity.desc', page: 1 })
+          .subscribe(({ movies, totalPages }) => {
+            this.movies.set(movies);
+            this.totalPages.set(Math.min(totalPages, 5));
+            this.isLoading.set(false);
+          });
+
+      } else if (mode === 'toprated') {
+        this.isLoading.set(true);
+        this.hasSearched.set(true);
+        this.currentPage.set(1);
+        this.movieService.discoverMovies({ sortBy: 'vote_average.desc', minRating: 7, page: 1 })
+          .subscribe(({ movies, totalPages }) => {
+            this.movies.set(movies);
+            this.totalPages.set(Math.min(totalPages, 5));
+            this.isLoading.set(false);
+          });
+
+      } else if (mode === 'recommended') {
+        this.loadRecommended(1);
+      }
+    });
+  }
+
+  private getRecommendedGenres(): number[] {
+    const entries = this.libraryService.entries();
+    const genreCounts: Record<number, number> = {};
+    for (const entry of entries) {
+      for (const gId of entry.movie.genreIds ?? []) {
+        genreCounts[gId] = (genreCounts[gId] ?? 0) + 1;
+      }
+    }
+    return Object.entries(genreCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([id]) => Number(id));
+  }
+
+  private loadRecommended(page: number) {
+    const topGenres = this.getRecommendedGenres();
+    if (topGenres.length === 0) return;
+
+    this.isLoading.set(true);
+    this.hasSearched.set(true);
+    this.currentPage.set(page);
+
+    this.movieService.discoverMovies({ genres: topGenres, sortBy: 'popularity.desc', page })
+      .subscribe(({ movies, totalPages }) => {
+        this.movies.set(movies);
+        this.totalPages.set(Math.min(totalPages, 5));
+        this.isLoading.set(false);
+      });
+  }
+
+  private loadPageForMode(page: number) {
+    const mode = this.currentMode();
+    if (mode === 'recommended') {
+      this.loadRecommended(page);
+    } else if (mode === 'popular') {
+      this.isLoading.set(true);
+      this.currentPage.set(page);
+      this.movieService.discoverMovies({ sortBy: 'popularity.desc', page })
+        .subscribe(({ movies }) => {
+          this.movies.set(movies);
+          this.isLoading.set(false);
+        });
+    } else if (mode === 'toprated') {
+      this.isLoading.set(true);
+      this.currentPage.set(page);
+      this.movieService.discoverMovies({ sortBy: 'vote_average.desc', minRating: 7, page })
+        .subscribe(({ movies }) => {
+          this.movies.set(movies);
+          this.isLoading.set(false);
+        });
+    } else {
+      this.onSearch(page);
+    }
   }
 
   loadTrending() {
@@ -192,6 +277,7 @@ export class Discover implements OnInit {
     this.movies.set([]);
     this.hasSearched.set(false);
     this.currentPage.set(1);
+    this.currentMode.set(null);
   }
 
   toggleGenre(id: number) {
@@ -205,7 +291,6 @@ export class Discover implements OnInit {
     return this.selectedGenres().includes(id);
   }
 
-
   updateCollaborator(index: number, value: string) {
     const updated = [...this.collaboratorInputs()];
     updated[index] = value;
@@ -213,9 +298,8 @@ export class Discover implements OnInit {
   }
 
   addCollaborator() {
-    if (this.collaboratorInputs().length < 5) {
+    if (this.collaboratorInputs().length < 5)
       this.collaboratorInputs.set([...this.collaboratorInputs(), '']);
-    }
   }
 
   removeCollaborator(index: number) {
@@ -224,11 +308,15 @@ export class Discover implements OnInit {
   }
 
   nextPage() {
-    if (this.currentPage() < this.totalPages()) this.onSearch(this.currentPage() + 1);
+    const next = this.currentPage() + 1;
+    if (next > this.totalPages()) return;
+    this.loadPageForMode(next);
   }
 
   prevPage() {
-    if (this.currentPage() > 1) this.onSearch(this.currentPage() - 1);
+    const prev = this.currentPage() - 1;
+    if (prev < 1) return;
+    this.loadPageForMode(prev);
   }
 
   addToLibrary(movie: Movie, status: 'want' | 'watching' | 'finished') {
@@ -249,6 +337,10 @@ export class Discover implements OnInit {
 
   get sectionTitle(): string {
     if (!this.hasSearched()) return 'Trending This Week';
+    const mode = this.currentMode();
+    if (mode === 'popular') return 'Popular Now';
+    if (mode === 'toprated') return 'Top Rated of All Time';
+    if (mode === 'recommended') return 'Recommended For You';
     const tab = this.activeTab();
     if (tab === 'person') return `Movies featuring "${this.personQuery()}"`;
     if (tab === 'collaborators') {

@@ -7,13 +7,16 @@ import { ProfileService } from '../../core/services/profile.service';
 import { Movie } from '../../core/models/movie.model';
 // 1. Add to imports at top:
 import { MovieDetailComponent } from '../../shared/movie-detail/movie-detail';
+import { Divider } from 'primeng/divider';
+
+// in imports array:
 
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, MovieDetailComponent],
+  imports: [CommonModule, RouterLink, MovieDetailComponent, Divider],
   templateUrl: './home.html',
 })
 export class Home implements OnInit {

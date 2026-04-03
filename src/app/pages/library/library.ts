@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { Rating } from 'primeng/rating';
 import { FormsModule } from '@angular/forms';
 import { LibraryService, WatchStatus } from '../../core/services/library.service';
@@ -14,6 +14,7 @@ import { MovieDetailComponent } from '../../shared/movie-detail/movie-detail';
 })
 export class Library {
   libraryService = inject(LibraryService);
+  private router = inject(Router);
   activeTab = signal<WatchStatus | 'all'>('all');
   selectedMovieId = signal<number | null>(null);
   openDetail(id: number) { this.selectedMovieId.set(id); }
@@ -36,6 +37,11 @@ export class Library {
 
   updateStatus(movieId: number, status: WatchStatus) {
     this.libraryService.updateStatus(movieId, status);
+  }
+
+  goToReview(event: Event) {
+    event.stopPropagation();
+    this.router.navigate(['/reviews']);
   }
 
   getStarRating(movieId: number): number {

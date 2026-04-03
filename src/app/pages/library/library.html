@@ -49,7 +49,6 @@
           </button>
         </div>
 
-        <!-- Info — fixed height bottom section so all cards align -->
         <div class="flex flex-1 flex-col gap-2 p-3">
           <p class="text-sm font-semibold text-white line-clamp-2 leading-tight">{{ entry.movie.title }}</p>
           <p class="text-xs text-slate-500">{{ entry.movie.releaseDate | slice:0:4 }}</p>
@@ -71,15 +70,24 @@
                 <p class="text-xs text-slate-500">
                   {{ getStarRating(entry.movie.id) > 0 ? getStarRating(entry.movie.id) + '/5' : 'Rate this' }}
                 </p>
-
                 <p-rating
                   [ngModel]="getStarRating(entry.movie.id)"
                   (ngModelChange)="saveStarRating(entry.movie.id, $event)"
                   [stars]="5">
-                 </p-rating>
+                </p-rating>
               </div>
             } @else {
               <p class="text-xs text-slate-600 italic">Finish to rate</p>
+            }
+          </div>
+
+          <!-- Fixed height review button area so all cards stay aligned -->
+          <div class="h-7">
+            @if (entry.status === 'finished') {
+              <button (click)="goToReview($event)"
+                class="w-full rounded-lg border border-rose-500/30 bg-rose-500/10 py-1 text-xs font-medium text-rose-300 transition hover:bg-rose-500/20">
+                {{ getStarRating(entry.movie.id) > 0 ? '✏️ Edit Review' : '+ Write Review' }}
+              </button>
             }
           </div>
 

@@ -50,7 +50,7 @@
             {{ recommendationSource() === 'library' ? 'Based on genres in your library' : 'Based on your favorite genres' }}
           </p>
         </div>
-        <a routerLink="/discover" class="text-sm text-rose-400 hover:text-rose-300">Explore more →</a>
+        <a routerLink="/discover" [queryParams]="{ mode: 'recommended' }" class="text-sm text-rose-400 hover:text-rose-300">Explore more →</a>
       </div>
       <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
         @for (movie of recommended(); track movie.id) {
@@ -68,6 +68,7 @@
             </div>
             <div class="p-2">
               <p class="text-xs font-medium text-white line-clamp-2 leading-tight">{{ movie.title }}</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">{{ movie.releaseDate | slice:0:4 }}</p>
             </div>
           </div>
         }
@@ -79,7 +80,7 @@
   <section>
     <div class="mb-4 flex items-center justify-between">
       <h2 class="text-xl font-semibold text-white">Popular Now</h2>
-      <a routerLink="/discover" class="text-sm text-rose-400 hover:text-rose-300">See all →</a>
+      <a routerLink="/discover" [queryParams]="{ mode: 'popular' }" class="text-sm text-rose-400 hover:text-rose-300">See all →</a>
     </div>
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
       @for (movie of popular(); track movie.id) {
@@ -97,6 +98,7 @@
           </div>
           <div class="p-2">
             <p class="text-xs font-medium text-white line-clamp-2 leading-tight">{{ movie.title }}</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">{{ movie.releaseDate | slice:0:4 }}</p>
           </div>
         </div>
       }
@@ -107,7 +109,7 @@
   <section>
     <div class="mb-4 flex items-center justify-between">
       <h2 class="text-xl font-semibold text-white">Top Rated of All Time</h2>
-      <a routerLink="/discover" class="text-sm text-rose-400 hover:text-rose-300">See all →</a>
+      <a routerLink="/discover" [queryParams]="{ mode: 'toprated' }" class="text-sm text-rose-400 hover:text-rose-300">See all →</a>
     </div>
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
       @for (movie of topRated(); track movie.id) {
@@ -125,11 +127,28 @@
           </div>
           <div class="p-2">
             <p class="text-xs font-medium text-white line-clamp-2 leading-tight">{{ movie.title }}</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">{{ movie.releaseDate | slice:0:4 }}</p>
           </div>
         </div>
       }
     </div>
   </section>
+
+  <!-- Bottom tagline -->
+<!-- Footer -->
+<!-- Footer -->
+<!-- Footer -->
+<!-- Footer -->
+<!-- Footer -->
+<section class="flex flex-col items-center justify-center gap-4 py-12 text-center">
+  <i class="pi pi-video text-3xl text-rose-400"></i>
+  <p class="text-xl font-semibold tracking-tight text-white italic">
+    Your next favorite film is one search away.
+  </p>
+  <p class="text-xs text-slate-400">© 2026 Christian Kraus</p>
+</section>
+  <!-- Bottom spacing -->
+  <div class="pb-4"></div>
 
 </div>
 

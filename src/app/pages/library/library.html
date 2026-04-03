@@ -49,9 +49,11 @@
           </button>
         </div>
 
+        <!-- Info — fixed height bottom section so all cards align -->
         <div class="flex flex-1 flex-col gap-2 p-3">
           <p class="text-sm font-semibold text-white line-clamp-2 leading-tight">{{ entry.movie.title }}</p>
           <p class="text-xs text-slate-500">{{ entry.movie.releaseDate | slice:0:4 }}</p>
+
           <select
             [value]="entry.status"
             (change)="updateStatus(entry.movie.id, $any($event.target).value)"
@@ -61,6 +63,26 @@
             <option value="watching">Watching</option>
             <option value="finished">Finished</option>
           </select>
+
+          <!-- Fixed height rating area so all cards are same height -->
+          <div class="h-10 flex items-center">
+            @if (entry.status === 'finished') {
+              <div (click)="$event.stopPropagation()" class="flex flex-col gap-0.5 w-full">
+                <p class="text-xs text-slate-500">
+                  {{ getStarRating(entry.movie.id) > 0 ? getStarRating(entry.movie.id) + '/5' : 'Rate this' }}
+                </p>
+
+                <p-rating
+                  [ngModel]="getStarRating(entry.movie.id)"
+                  (ngModelChange)="saveStarRating(entry.movie.id, $event)"
+                  [stars]="5">
+                 </p-rating>
+              </div>
+            } @else {
+              <p class="text-xs text-slate-600 italic">Finish to rate</p>
+            }
+          </div>
+
         </div>
 
       </div>

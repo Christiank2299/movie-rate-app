@@ -1,13 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Rating } from 'primeng/rating';
+import { FormsModule } from '@angular/forms';
 import { LibraryService, WatchStatus } from '../../core/services/library.service';
 import { MovieDetailComponent } from '../../shared/movie-detail/movie-detail';
 
 @Component({
   selector: 'app-library',
   standalone: true,
-  imports: [CommonModule, RouterLink, MovieDetailComponent],
+  imports: [CommonModule, RouterLink, FormsModule, Rating, MovieDetailComponent],
   templateUrl: './library.html',
 })
 export class Library {
@@ -16,7 +18,7 @@ export class Library {
   selectedMovieId = signal<number | null>(null);
   openDetail(id: number) { this.selectedMovieId.set(id); }
   closeDetail() { this.selectedMovieId.set(null); }
-  
+
   tabs: { label: string; value: WatchStatus | 'all' }[] = [
     { label: 'All', value: 'all' },
     { label: 'Want to Watch', value: 'want' },
@@ -30,14 +32,27 @@ export class Library {
     return this.libraryService.getByStatus(tab);
   }
 
-  
-
-  remove(movieId: number) {
-    this.libraryService.removeMovie(movieId);
-  }
+  remove(movieId: number) { this.libraryService.removeMovie(movieId); }
 
   updateStatus(movieId: number, status: WatchStatus) {
     this.libraryService.updateStatus(movieId, status);
+  }
+
+  getStarRating(movieId: number): number {
+    const review = this.libraryService.getReview(movieId);
+    return review ? Math.round(review.rating / 2) : 0;
+  }
+
+  saveStarRating(movieId: number, stars: number) {
+    const entry = this.libraryService.getEntry(movieId);
+    if (entry?.status !== 'finished') return;
+    const existing = this.libraryService.getReview(movieId);
+    this.libraryService.addReview({
+      movieId,
+      rating: stars * 2,
+      reviewText: existing?.reviewText ?? '',
+      createdAt: existing?.createdAt ?? new Date().toISOString(),
+    });
   }
 
   statusColor(status: WatchStatus) {

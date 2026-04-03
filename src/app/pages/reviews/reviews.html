@@ -31,14 +31,15 @@
               {{ entry.movie.title }}
             </p>
             <p class="text-xs text-slate-500 mt-0.5">{{ entry.movie.releaseDate | slice:0:4 }}</p>
+
             @if (review && !isEditing) {
-              <div class="mt-2 flex items-center gap-1">
-                @for (s of stars(10); track s) {
-                  <i class="pi pi-star-fill text-xs"
-                    [class.text-yellow-400]="s <= review.rating"
-                    [class.text-slate-600]="s > review.rating"></i>
-                }
-                <span class="ml-1 text-xs text-slate-400">{{ review.rating }}/10</span>
+              <div class="mt-2 flex items-center gap-2">
+                <p-rating
+                  [ngModel]="displayStars(review.rating)"
+                  [readonly]="true"
+                  [stars]="5">
+                </p-rating>
+                <span class="text-xs text-slate-400">{{ review.rating }}/10</span>
               </div>
             }
           </div>
@@ -46,19 +47,26 @@
 
         <div class="flex-1 border-t border-white/5 p-4">
           @if (isEditing) {
-            <div class="space-y-3">
+            <div class="space-y-4">
+
               <div>
-                <label class="mb-1 block text-xs text-slate-400">Rating: {{ draftRating() }}/10</label>
-                <input type="range" min="1" max="10"
+                <label class="mb-2 block text-xs text-slate-400">
+                  Your Rating: {{ draftRating() }}/5 stars ({{ draftRating() * 2 }}/10)
+                </label>
+                <p-rating
                   [ngModel]="draftRating()"
                   (ngModelChange)="draftRating.set($event)"
-                  class="w-full accent-rose-500" />
+                  [stars]="5">
+                </p-rating>
               </div>
+
               <textarea rows="3" placeholder="Write your review…"
                 [ngModel]="draftText()"
                 (ngModelChange)="draftText.set($event)"
-                class="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-rose-400/50">
+                class="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm
+                       text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-rose-400/50">
               </textarea>
+
               <div class="flex gap-2">
                 <button (click)="saveReview(entry.movie.id)"
                   class="flex-1 rounded-xl bg-rose-500 py-2 text-sm font-semibold text-white hover:bg-rose-400">
@@ -80,7 +88,8 @@
           } @else {
             <p class="text-sm text-slate-500">No review yet.</p>
             <button (click)="startEdit(entry.movie.id)"
-              class="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm font-medium text-rose-300 hover:bg-rose-500/20">
+              class="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-2
+                     text-sm font-medium text-rose-300 hover:bg-rose-500/20">
               + Write a Review
             </button>
           }

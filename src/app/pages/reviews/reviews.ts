@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { LibraryService } from '../../core/services/library.service';
 import { Review } from '../../core/models/review.model';
 import { LibraryEntry } from '../../core/services/library.service';
+import { MovieDetailComponent } from '../../shared/movie-detail/movie-detail';
 
 @Component({
   selector: 'app-reviews',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MovieDetailComponent],
   templateUrl: './reviews.html',
 })
 export class Reviews {
@@ -17,6 +18,9 @@ export class Reviews {
   editingId = signal<number | null>(null);
   draftRating = signal(5);
   draftText = signal('');
+  selectedMovieId = signal<number | null>(null);
+  openDetail(id: number) { this.selectedMovieId.set(id); }
+  closeDetail() { this.selectedMovieId.set(null); }
 
   get finished(): LibraryEntry[] {
     return this.libraryService.getByStatus('finished');

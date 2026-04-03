@@ -12,3 +12,23 @@ export interface Movie {
   language: string;
   genreIds?: number[];
 }
+
+// ADD THIS BELOW:
+export interface MovieDetails extends Movie {
+  backdropUrl: string;
+  runtime: number;
+  genres: { id: number; name: string }[];
+  languages: { english_name: string; iso_639_1: string }[];
+  status: string;
+  tagline: string;
+  budget: number;
+  revenue: number;
+  director: { name: string; profileUrl: string } | null;
+  cast: {
+    id: number;
+    name: string;
+    character: string;
+    profile_path: string | null;
+  }[];
+  trailerKey: string | null;
+}

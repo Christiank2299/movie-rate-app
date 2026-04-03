@@ -5,11 +5,15 @@ import { MovieService } from '../../core/services/movie.service';
 import { LibraryService } from '../../core/services/library.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { Movie } from '../../core/models/movie.model';
+// 1. Add to imports at top:
+import { MovieDetailComponent } from '../../shared/movie-detail/movie-detail';
+
+
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MovieDetailComponent],
   templateUrl: './home.html',
 })
 export class Home implements OnInit {
@@ -22,7 +26,9 @@ export class Home implements OnInit {
   recommended = signal<Movie[]>([]);
   hasRecommendations = signal(false);
   recommendationSource = signal<'library' | 'profile' | null>(null);
-
+  selectedMovieId = signal<number | null>(null);
+  openDetail(id: number) { this.selectedMovieId.set(id); }
+  closeDetail() { this.selectedMovieId.set(null); }
   ngOnInit() {
     this.movieService.getPopular().subscribe(r => this.popular.set(r.slice(0, 6)));
     this.movieService.getTopRated().subscribe(r => this.topRated.set(r.slice(0, 6)));

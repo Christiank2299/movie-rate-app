@@ -2,17 +2,21 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LibraryService, WatchStatus } from '../../core/services/library.service';
+import { MovieDetailComponent } from '../../shared/movie-detail/movie-detail';
 
 @Component({
   selector: 'app-library',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MovieDetailComponent],
   templateUrl: './library.html',
 })
 export class Library {
   libraryService = inject(LibraryService);
   activeTab = signal<WatchStatus | 'all'>('all');
-
+  selectedMovieId = signal<number | null>(null);
+  openDetail(id: number) { this.selectedMovieId.set(id); }
+  closeDetail() { this.selectedMovieId.set(null); }
+  
   tabs: { label: string; value: WatchStatus | 'all' }[] = [
     { label: 'All', value: 'all' },
     { label: 'Want to Watch', value: 'want' },
@@ -25,6 +29,8 @@ export class Library {
     if (tab === 'all') return this.libraryService.entries();
     return this.libraryService.getByStatus(tab);
   }
+
+  
 
   remove(movieId: number) {
     this.libraryService.removeMovie(movieId);

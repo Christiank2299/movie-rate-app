@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MovieService } from '../../core/services/movie.service';
 import { LibraryService } from '../../core/services/library.service';
 import { Movie } from '../../core/models/movie.model';
+import { MovieDetailComponent } from '../../shared/movie-detail/movie-detail';
 
 export const GENRES = [
   { id: 28, name: 'Action' }, { id: 12, name: 'Adventure' },
@@ -38,7 +39,7 @@ export const LANGUAGES = [
 @Component({
   selector: 'app-discover',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MovieDetailComponent],
   templateUrl: './discover.html',
 })
 export class Discover implements OnInit {
@@ -69,10 +70,15 @@ export class Discover implements OnInit {
   currentPage = signal(1);
   totalPages = signal(1);
 
+  selectedMovieId = signal<number | null>(null);
+  openDetail(id: number) { this.selectedMovieId.set(id); }
+  closeDetail() { this.selectedMovieId.set(null); }
+
   readonly genres = GENRES;
   readonly sortOptions = SORT_OPTIONS;
   readonly languages = LANGUAGES;
   readonly years = this.buildYears();
+  
 
   ngOnInit() {
     this.loadTrending();

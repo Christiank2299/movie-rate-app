@@ -1,0 +1,182 @@
+@if (movieId !== null) {
+  <div class="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4"
+    (click)="close()">
+
+    <div class="absolute inset-0 bg-black/75 backdrop-blur-sm"></div>
+
+    <div class="relative z-10 w-full max-w-4xl max-h-[92vh] overflow-y-auto
+                rounded-t-[2rem] sm:rounded-[2rem] border border-white/10 bg-slate-950 shadow-2xl"
+      (click)="$event.stopPropagation()">
+
+      @if (isLoading()) {
+        <div class="flex h-64 items-center justify-center">
+          <div class="h-10 w-10 animate-spin rounded-full border-2 border-rose-500 border-t-transparent"></div>
+        </div>
+      }
+
+      @if (details(); as d) {
+        <!-- Backdrop -->
+        <div class="relative h-52 w-full overflow-hidden rounded-t-[2rem] sm:h-64 bg-slate-800">
+          @if (d.backdropUrl) {
+            <img [src]="d.backdropUrl" [alt]="d.title" class="h-full w-full object-cover opacity-50" />
+          }
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+          <button (click)="close()"
+            class="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center
+                   rounded-full bg-black/60 text-white backdrop-blur transition hover:bg-black/80">
+            <i class="pi pi-times text-sm"></i>
+          </button>
+          <div class="absolute bottom-4 left-5 right-16">
+            @if (d.tagline) {
+              <p class="mb-1 text-xs italic text-slate-400">{{ d.tagline }}</p>
+            }
+            <h2 class="text-2xl font-bold leading-tight text-white drop-shadow-lg">{{ d.title }}</h2>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="grid gap-6 p-5 md:grid-cols-[160px_1fr]">
+
+          <!-- Left: poster + actions -->
+          <div class="flex flex-col gap-3">
+            @if (d.posterUrl) {
+              <img [src]="d.posterUrl" [alt]="d.title"
+                class="w-full rounded-2xl border border-white/10 shadow-xl hidden md:block" />
+            }
+
+            @if (!isInLibrary()) {
+              <div class="flex flex-col gap-2">
+                <button (click)="addToLibrary('want')"
+                  class="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs text-slate-300
+                         transition hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/30">
+                  + Want to Watch
+                </button>
+                <button (click)="addToLibrary('watching')"
+                  class="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs text-slate-300
+                         transition hover:bg-blue-500/20 hover:text-blue-300 hover:border-blue-500/30">
+                  + Watching
+                </button>
+                <button (click)="addToLibrary('finished')"
+                  class="w-full rounded-xl border border-white/10 bg-white/5 py-2 text-xs text-slate-300
+                         transition hover:bg-green-500/20 hover:text-green-300 hover:border-green-500/30">
+                  + Finished
+                </button>
+              </div>
+            } @else {
+              <div class="flex flex-col gap-1">
+                <p class="text-xs text-slate-500 text-center">In your library</p>
+                <select [value]="getStatus()"
+                  (change)="updateStatus($any($event.target).value)"
+                  class="w-full rounded-xl border border-white/10 bg-slate-800 px-3 py-2
+                         text-xs text-white focus:outline-none">
+                  <option value="want">Want to Watch</option>
+                  <option value="watching">Watching</option>
+                  <option value="finished">Finished</option>
+                </select>
+              </div>
+            }
+
+            @if (d.trailerKey) {
+              <a [href]="'https://www.youtube.com/watch?v=' + d.trailerKey"
+                target="_blank" rel="noopener"
+                class="flex items-center justify-center gap-2 rounded-xl border border-rose-500/30
+                       bg-rose-500/10 py-2.5 text-xs font-semibold text-rose-300
+                       transition hover:bg-rose-500/20">
+                <i class="pi pi-youtube text-sm"></i> Watch Trailer
+              </a>
+            }
+          </div>
+
+          <!-- Right: details -->
+          <div class="min-w-0 space-y-5">
+
+            <!-- Rating -->
+            <div class="flex flex-wrap items-center gap-2">
+              @for (n of [1,2,3,4,5]; track n) {
+                <i class="pi text-sm"
+                  [class.pi-star-fill]="n <= filledStars(d.voteAverage)"
+                  [class.pi-star]="n > filledStars(d.voteAverage)"
+                  [class.text-yellow-400]="n <= filledStars(d.voteAverage)"
+                  [class.text-slate-600]="n > filledStars(d.voteAverage)">
+                </i>
+              }
+              <span class="text-sm font-bold text-white">{{ d.voteAverage | number:'1.1-1' }}</span>
+              <span class="text-xs text-slate-500">({{ d.voteCount | number }} votes)</span>
+            </div>
+
+            <!-- Pills -->
+            <div class="flex flex-wrap gap-2">
+              <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">📅 {{ year }}</span>
+              @if (d.runtime) {
+                <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">🕐 {{ runtime }}</span>
+              }
+              <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">{{ d.status }}</span>
+              @for (genre of d.genres; track genre.id) {
+                <span class="rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-1 text-xs text-rose-300">{{ genre.name }}</span>
+              }
+            </div>
+
+            <!-- Overview -->
+            <p class="text-sm leading-relaxed text-slate-300">{{ d.overview }}</p>
+
+            <!-- Director -->
+            @if (d.director) {
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <p class="mb-0.5 text-xs font-semibold uppercase tracking-widest text-slate-500">Director</p>
+                <p class="text-sm font-medium text-white">{{ d.director.name }}</p>
+              </div>
+            }
+
+            <!-- Languages -->
+            @if (d.languages.length > 0) {
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <p class="mb-0.5 text-xs font-semibold uppercase tracking-widest text-slate-500">Languages</p>
+                <p class="text-sm text-slate-300">{{ d.languages.map(l => l.english_name).join(', ') }}</p>
+              </div>
+            }
+
+            <!-- Budget / Revenue -->
+            @if (d.budget || d.revenue) {
+              <div class="grid grid-cols-2 gap-3">
+                <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <p class="mb-0.5 text-xs font-semibold uppercase tracking-widest text-slate-500">Budget</p>
+                  <p class="text-sm font-medium text-white">{{ formattedBudget }}</p>
+                </div>
+                <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <p class="mb-0.5 text-xs font-semibold uppercase tracking-widest text-slate-500">Box Office</p>
+                  <p class="text-sm font-medium text-white">{{ formattedRevenue }}</p>
+                </div>
+              </div>
+            }
+
+            <!-- Cast -->
+            @if (d.cast.length > 0) {
+              <div>
+                <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-500">Cast</p>
+                <div class="flex gap-3 overflow-x-auto pb-2">
+                  @for (actor of d.cast; track actor.id) {
+                    <div class="flex w-16 flex-shrink-0 flex-col items-center gap-1.5 text-center">
+                      <div class="h-14 w-14 overflow-hidden rounded-full border border-white/10 bg-slate-800">
+                        @if (actor.profile_path) {
+                          <img [src]="profileUrl(actor.profile_path)" [alt]="actor.name"
+                            class="h-full w-full object-cover" />
+                        } @else {
+                          <div class="flex h-full w-full items-center justify-center text-slate-600">
+                            <i class="pi pi-user text-lg"></i>
+                          </div>
+                        }
+                      </div>
+                      <p class="text-[10px] font-medium leading-tight text-slate-300 line-clamp-2">{{ actor.name }}</p>
+                      <p class="text-[9px] leading-tight text-slate-500 line-clamp-1">{{ actor.character }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

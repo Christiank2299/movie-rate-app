@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, switchMap, forkJoin, of } from 'rxjs';
-import { Movie } from '../models/movie.model';
+// TO:
+import { Movie, MovieDetails } from '../models/movie.model';
 
 export interface DiscoverParams {
   query?: string;
@@ -16,7 +17,6 @@ export interface DiscoverParams {
   colorType?: 'color' | 'black_and_white' | '';
   inTheaters?: boolean;
 }
-
 
 
 export interface MoviePage {
@@ -154,4 +154,47 @@ searchByCollaborators(names: string[], page = 1): Observable<MoviePage> {
       map(res => (res?.results ?? []).map((item: any) => this.mapMovie(item)))
     );
   }
+  getMovieDetails(movieId: number): Observable<MovieDetails> {
+    const url = `${this.baseUrl}/movie/${movieId}?api_key=${this.apiKey}&language=en-US&append_to_response=credits,videos`;
+    return this.http.get<any>(url).pipe(
+      map(details => {
+        const director = details.credits?.crew?.find((c: any) => c.job === 'Director');
+        const cast = details.credits?.cast?.slice(0, 10) ?? [];
+        const trailer = details.videos?.results?.find(
+          (v: any) => v.type === 'Trailer' && v.site === 'YouTube'
+        );
+        return {
+          id: details.id,
+          title: details.title ?? 'Untitled',
+          overview: details.overview ?? '',
+          posterPath: details.poster_path ?? '',
+          posterUrl: details.poster_path ? `${this.imageBaseUrl}${details.poster_path}` : '',
+          backdropPath: details.backdrop_path ?? '',
+          backdropUrl: details.backdrop_path
+            ? `https://image.tmdb.org/t/p/w1280${details.backdrop_path}` : '',
+          releaseDate: details.release_date ?? '',
+          runtime: details.runtime ?? 0,
+          voteAverage: details.vote_average ?? 0,
+          voteCount: details.vote_count ?? 0,
+          popularity: details.popularity ?? 0,
+          language: details.original_language ?? '',
+          genreIds: details.genres?.map((g: any) => g.id) ?? [],
+          genres: details.genres ?? [],
+          languages: details.spoken_languages ?? [],
+          status: details.status ?? '',
+          tagline: details.tagline ?? '',
+          budget: details.budget ?? 0,
+          revenue: details.revenue ?? 0,
+          director: director
+            ? { name: director.name, profileUrl: director.profile_path
+                ? `https://image.tmdb.org/t/p/w185${director.profile_path}` : '' }
+            : null,
+          cast,
+          trailerKey: trailer?.key ?? null,
+        };
+      })
+    );
+  }
 }
+
+  

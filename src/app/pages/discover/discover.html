@@ -52,8 +52,8 @@
           <div class="space-y-6 rounded-2xl border border-white/10 bg-slate-900/60 p-6">
 
             <div>
-              <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Genre</p>
-              <div class="flex flex-wrap gap-2">
+              <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400 text-center">Genre</p>
+              <div class="flex flex-wrap gap-2 justify-center">
                 @for (genre of genres; track genre.id) {
                   <button (click)="toggleGenre(genre.id)"
                     [class.bg-rose-500]="isGenreSelected(genre.id)"
@@ -72,8 +72,8 @@
             <div class="border-t border-white/5"></div>
 
             <div>
-              <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Style & Availability</p>
-              <div class="flex flex-wrap gap-2">
+              <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400 text-center">Style & Availability</p>
+              <div class="flex flex-wrap gap-2 justify-center">
                 @for (opt of [
                   { value: '', label: '🎨 Any Color' },
                   { value: 'color', label: '🌈 Color' },
@@ -318,7 +318,6 @@
     }
   </div>
 
-  <!-- Search results pagination -->
   @if (hasSearched() && totalPages() > 1) {
     <div class="flex items-center justify-center gap-4 pt-4">
       <button (click)="prevPage()" [disabled]="currentPage() === 1"
@@ -333,7 +332,6 @@
     </div>
   }
 
-  <!-- Trending pagination -->
   @if (!hasSearched() && trendingTotalPages() > 1) {
     <div class="flex items-center justify-center gap-4 pt-4">
       <button (click)="prevTrendingPage()" [disabled]="trendingPage() === 1"

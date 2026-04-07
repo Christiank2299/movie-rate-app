@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MovieService } from '../../core/services/movie.service';
 import { LibraryService } from '../../core/services/library.service';
 import { Movie } from '../../core/models/movie.model';
-import { MovieDetailComponent } from '../../shared/movie-detail/movie-detail';
+import { MovieDetailComponent } from '../../shared/components/movie-detail/movie-detail';
 
 export const GENRES = [
   { id: 28, name: 'Action' }, { id: 12, name: 'Adventure' },

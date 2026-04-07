@@ -5,11 +5,8 @@ import { MovieService } from '../../core/services/movie.service';
 import { LibraryService } from '../../core/services/library.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { Movie } from '../../core/models/movie.model';
-// 1. Add to imports at top:
-import { MovieDetailComponent } from '../../shared/movie-detail/movie-detail';
-// import { Divider } from 'primeng/divider';
+import { MovieDetailComponent } from '../../shared/components/movie-detail/movie-detail';
 
-// in imports array:
 
 
 

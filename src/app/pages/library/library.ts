@@ -4,7 +4,7 @@ import { RouterLink, Router } from '@angular/router';
 import { Rating } from 'primeng/rating';
 import { FormsModule } from '@angular/forms';
 import { LibraryService, WatchStatus } from '../../core/services/library.service';
-import { MovieDetailComponent } from '../../shared/movie-detail/movie-detail';
+import { MovieDetailComponent } from '../../shared/components/movie-detail/movie-detail';
 
 @Component({
   selector: 'app-library',

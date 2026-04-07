@@ -13,7 +13,7 @@ export interface Movie {
   genreIds?: number[];
 }
 
-// ADD THIS BELOW:
+
 export interface MovieDetails extends Movie {
   backdropUrl: string;
   runtime: number;

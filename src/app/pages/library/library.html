@@ -63,7 +63,7 @@
             <option value="finished">Finished</option>
           </select>
 
-          <!-- Fixed height rating area so all cards are same height -->
+
           <div class="h-10 flex items-center">
             @if (entry.status === 'finished') {
               <div (click)="$event.stopPropagation()" class="flex flex-col gap-0.5 w-full">
@@ -81,7 +81,6 @@
             }
           </div>
 
-          <!-- Fixed height review button area so all cards stay aligned -->
           <div class="h-7">
             @if (entry.status === 'finished') {
               <button (click)="goToReview($event)"

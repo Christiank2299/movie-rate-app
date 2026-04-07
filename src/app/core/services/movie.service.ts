@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, switchMap, forkJoin, of } from 'rxjs';
-// TO:
 import { Movie, MovieDetails } from '../models/movie.model';
 
 export interface DiscoverParams {

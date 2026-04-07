@@ -1,8 +1,8 @@
 import { Component, inject, signal, Input, OnChanges, SimpleChanges, output, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MovieService } from '../../core/services/movie.service';
-import { LibraryService, WatchStatus } from '../../core/services/library.service';
-import { MovieDetails } from '../../core/models/movie.model';
+import { MovieService } from '../../../core/services/movie.service';
+import { LibraryService, WatchStatus } from '../../../core/services/library.service';
+import { MovieDetails } from '../../../core/models/movie.model';
 
 @Component({
   selector: 'app-movie-detail',

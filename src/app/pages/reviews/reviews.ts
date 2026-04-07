@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Rating} from 'primeng/rating';
 import { LibraryService, LibraryEntry } from '../../core/services/library.service';
-import { MovieDetailComponent } from '../../shared/movie-detail/movie-detail';
+import { MovieDetailComponent } from '../../shared/components/movie-detail/movie-detail';
 import { Review } from '../../core/models/review.model';
 
 @Component({

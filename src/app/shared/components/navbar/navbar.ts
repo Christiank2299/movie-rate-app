@@ -7,3 +7,5 @@ import { Component } from '@angular/core';
   styleUrl: './navbar.css',
 })
 export class Navbar {}
+// This is currently a placeholder,
+// I plan to refactor and add Movie-Card and Navbar shared components in the future. 

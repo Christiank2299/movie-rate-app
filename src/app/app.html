@@ -36,15 +36,21 @@
         </a>
       </nav>
 
-      <!-- Greeting -->
+      <!-- Greeting + Sign Out -->
       @if (displayName) {
-        <a routerLink="/profile"
-          class="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10 md:flex">
-          <div class="flex h-6 w-6 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white">
-            {{ displayName.charAt(0).toUpperCase() }}
-          </div>
-          <span>Hello, <span class="font-semibold text-white">{{ displayName }}</span></span>
-        </a>
+        <div class="hidden items-center gap-2 md:flex">
+          <a routerLink="/profile"
+            class="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10">
+            <div class="flex h-6 w-6 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white">
+              {{ displayName.charAt(0).toUpperCase() }}
+            </div>
+            <span>Hello, <span class="font-semibold text-white">{{ displayName }}</span></span>
+          </a>
+          <button (click)="signOut()"
+            class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 transition hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/30">
+            Sign Out
+          </button>
+        </div>
       }
 
     </div>

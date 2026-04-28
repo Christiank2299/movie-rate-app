@@ -13,17 +13,28 @@ export class SupabaseService {
   constructor() {
     this.supabase = createClient(
       environment.supabaseUrl,
-      environment.supabaseKey
+      environment.supabaseKey,
+      {
+        auth: {
+          storage: window.localStorage,
+          flowType: 'pkce',
+          detectSessionInUrl: true,
+          persistSession: true,
+          lock: async (_name: string, _acquireTimeout: number, fn: () => Promise<any>) => {
+            return fn();
+          }
+        }
+      }
     );
 
-    // Check for existing session on load
-    this.supabase.auth.getSession().then(({ data }) => {
-      this._user.next(data.session?.user ?? null);
+    this.supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth event:', event, session?.user?.email);
+      this._user.next(session?.user ?? null);
     });
 
-    // Listen for auth changes
-    this.supabase.auth.onAuthStateChange((_, session) => {
-      this._user.next(session?.user ?? null);
+    this.supabase.auth.getSession().then(({ data }) => {
+      console.log('Initial session:', data.session?.user?.email);
+      this._user.next(data.session?.user ?? null);
     });
   }
 
@@ -31,7 +42,7 @@ export class SupabaseService {
     return this.supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin
+        redirectTo: `${window.location.origin}/`
       }
     });
   }

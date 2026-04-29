@@ -17,24 +17,26 @@ export class App implements OnInit {
   private libraryService = inject(LibraryService);
   private router = inject(Router);
 
-  ngOnInit() {
-  // Handle OAuth redirect token in URL
-  this.supabase.getClient().auth.getSession().then(({ data }) => {
-    console.log('Session on init:', data.session?.user?.email);
-  });
+  isLoggedIn = false;
 
+  ngOnInit() {
   this.supabase.user$.subscribe(async user => {
-    console.log('User state changed:', user?.email);
+    this.isLoggedIn = !!user;
+
     if (!user) {
       this.router.navigate(['/login']);
     } else {
       await this.profileService.loadProfile();
       await this.libraryService.loadUserData();
-      
+
       if (!this.profileService.hasProfile()) {
         this.router.navigate(['/profile']);
       } else {
-        this.router.navigate(['/']);
+        // Only redirect if currently on login page
+        const currentUrl = this.router.url;
+        if (currentUrl === '/login' || currentUrl.includes('code=')) {
+          this.router.navigate(['/']);
+        }
       }
     }
   });
@@ -42,14 +44,11 @@ export class App implements OnInit {
 
   async signOut() {
     await this.supabase.signOut();
+    this.isLoggedIn = false;
     this.router.navigate(['/login']);
   }
 
   get displayName(): string {
     return this.profileService.profile()?.displayName ?? '';
-  }
-
-  get isLoggedIn(): boolean {
-    return !!this.supabase.getCurrentUser();
   }
 }

@@ -39,13 +39,13 @@ export class SupabaseService {
   }
 
   async signInWithGoogle() {
-  return this.supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: 'https://christiank2299.github.io/movie-rate-app/'
-    }
-  });
-}
+    return this.supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: environment.redirectUrl
+      }
+    });
+  }
 
   async signOut() {
     return this.supabase.auth.signOut();

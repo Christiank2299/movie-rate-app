@@ -1,5 +1,65 @@
-<div class="min-h-screen flex items-center justify-center bg-slate-950">
-  <div class="rounded-[2rem] border border-white/10 bg-white/5 p-12 shadow-2xl text-center max-w-md w-full mx-4">
+<style>
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scroll-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 40s linear infinite;
+}
+
+.animate-scroll-right {
+  animation: scroll-right 40s linear infinite;
+}
+</style>
+
+<div class="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-950">
+
+  <!-- Scrolling poster background -->
+  @if (posters().length > 0) {
+    <div class="absolute inset-0 flex flex-col gap-3 opacity-55 pointer-events-none"
+         style="transform: rotate(-5deg) scale(1.2)">
+      
+      <!-- Row 1 - scrolls left -->
+      <div class="flex gap-3 animate-scroll-left">
+        @for (url of posters(); track url + 'a') {
+          <img [src]="url" class="h-48 w-32 object-cover rounded-xl flex-shrink-0" />
+        }
+      </div>
+
+      <!-- Row 2 - scrolls right -->
+      <div class="flex gap-3 animate-scroll-right">
+        @for (url of posters(); track url + 'b') {
+          <img [src]="url" class="h-48 w-32 object-cover rounded-xl flex-shrink-0" />
+        }
+      </div>
+
+      <!-- Row 3 - scrolls left -->
+      <div class="flex gap-3 animate-scroll-left">
+        @for (url of posters(); track url + 'c') {
+          <img [src]="url" class="h-48 w-32 object-cover rounded-xl flex-shrink-0" />
+        }
+      </div>
+
+      <!-- Row 4 - scrolls right -->
+      <div class="flex gap-3 animate-scroll-right">
+        @for (url of posters(); track url + 'd') {
+          <img [src]="url" class="h-48 w-32 object-cover rounded-xl flex-shrink-0" />
+        }
+      </div>
+    </div>
+
+    <!-- Dark gradient overlay -->
+    <div class="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/20 to-slate-950/60 pointer-events-none"></div>
+  }
+
+  <!-- Login card -->
+  <div class="relative z-10 rounded-[2rem] border border-white/10 bg-slate-950/80 backdrop-blur-md p-12 shadow-2xl text-center max-w-md w-full mx-4">
     
     <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-500/20 text-rose-300 mx-auto mb-6">
       <i class="pi pi-video text-3xl"></i>
@@ -28,4 +88,5 @@
       © 2026 Christian Kraus · MovieRate
     </p>
   </div>
+
 </div>
